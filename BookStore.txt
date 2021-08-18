@@ -1,0 +1,482 @@
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import java.util.Scanner;
+import java.sql.PreparedStatement;
+import java.io.*;
+import java.util.*;
+import java.lang.*;
+import java.text.DecimalFormat;
+
+public class BookMain {
+
+	static Connection conn;
+
+	static String user[] = {"jack", "john", "arthur", "diego", "harry", "sunil" };
+	static String password[] = { "jack1234","john1234", "arthur1234", "diego1234", "harry1234", "sunil1234" };
+
+	public static void main(String args[]) {
+
+		System.out.println("Welcome to my book shop ! How may I help you ?\n");
+		char cont = 'y';
+		while (cont == 'y' || cont == 'Y') {
+
+			System.out.println("1.Insert a new book\n2.Retrieve a book\n3.Update \n4.Deletion\n5.Checkout");
+			Scanner sc = new Scanner(System.in);
+			int choice = sc.nextInt();
+
+			switch (choice) {
+			case 1:
+				insertbook();
+				break;
+			case 2:
+				retrieve();
+				break;
+			case 3:
+				updateTable();
+				break;
+			case 4:
+				removeUser();
+				break;
+
+			case 5:
+
+				System.out.println("Preparing your bill.....");
+				for (int i = 0; i < 10000; i++)
+					;
+				checkout();
+				break;
+			default:
+				System.out.println("Check input please !");
+
+			}
+			System.out.println("Do you want to continue ? (Y/N)");
+			cont = sc.next().charAt(0);
+		}
+		System.out.println("Come back soon !!");
+		closeConnection();
+	}
+
+	public void newConnection() {
+		try {
+
+			Class.forName("com.mysql.cj.jdbc.Driver");
+			Connection con = DriverManager.getConnection("jdbc:mysql://localhost:3306/BookShop", "root", "Rick@1999");
+			conn = con;
+			if (con == null) {
+				System.out.println("JDBC connection is not established");
+
+			} else
+				System.out.println("Congratulations, JDBC connected !");
+
+		}
+
+		catch (Exception e) {
+			System.out.println(e);
+		}
+	}
+
+	public static void insertbook() {
+		Scanner sc = new Scanner(System.in);
+		System.out.println("Enter username: ");
+		String u_name = sc.nextLine();
+
+		System.out.println("Enter password: ");
+		String pass = sc.nextLine();
+
+		try {
+			if (checkpass(u_name, pass)) {
+
+				BookMain book = new BookMain();
+				book.newConnection();
+				System.out.println("\nEnter the new book name");
+				String n_name = sc.nextLine();
+
+				System.out.println("Enter the new book id");
+				int id = sc.nextInt();
+
+				sc.nextLine();
+
+				System.out.println("Enter the author's name");
+				String a_name = sc.nextLine();
+
+				System.out.println("Enter the author's gender");
+				String a_gen = sc.nextLine();
+
+				System.out.println("Enter the book category(Historical/Health/Academic)");
+				String b_cat = sc.nextLine();
+
+				System.out.println("Enter the book price");
+				float b_price = sc.nextFloat();
+
+				String q = "insert into " + u_name + "(Book_TITLE, Book_ID, AUTHOR, GENDER, Book_Category,PRICE) "
+						+ "values(?,?,?,?,?,?);";
+				PreparedStatement pstmt = conn.prepareStatement(q);
+
+				pstmt.setString(1, n_name);
+				pstmt.setInt(2, id);
+				pstmt.setString(3, a_name);
+				pstmt.setString(4, a_gen);
+				pstmt.setString(5, b_cat);
+				pstmt.setFloat(6, b_price);
+
+				pstmt.executeUpdate();
+
+				System.out.println("\nCreated !!");
+			} else
+				System.out.println("Wrong username or password !");
+
+		} catch (Exception e) {
+			System.out.println(e);
+		}
+
+	}
+
+	public static void updateTable() {
+		Scanner sc = new Scanner(System.in);
+		System.out.println("Enter username: ");
+		String u_name = sc.nextLine();
+		System.out.println("Enter password: ");
+		String pass = sc.nextLine();
+		if (checkpass(u_name, pass)) {
+
+			try {
+				BookMain book = new BookMain();
+				book.newConnection();
+
+				System.out.println(
+						"Update menu:\n1.Edit book name\n2.Edit Author name\n3.Edit gender\n4.Edit category\n5.Edit Price");
+
+				int choice = sc.nextInt();
+				if (choice == 1) {
+					try {
+
+						sc.nextLine();
+
+						System.out.println("Enter the old book name");
+						String o_name = sc.nextLine();
+
+						System.out.println("Enter the new book name");
+						String n_name = sc.nextLine();
+
+						String q = "update " + u_name + " set Book_TITLE= " + "'" + n_name + "'"
+								+ " where Book_TITLE = " + "'" + o_name + "'" + ";";
+						PreparedStatement pstmt = conn.prepareStatement(q);
+
+						pstmt.execute();
+						System.out.println("Updated the book name!");
+					} catch (Exception e) {
+						System.out.println(e);
+					}
+
+				} else if (choice == 2) {
+					try {
+
+						sc.nextLine();
+
+						System.out.println("Enter the old Author name");
+						String o_name = sc.nextLine();
+
+						System.out.println("Enter the new Author name");
+						String n_name = sc.nextLine();
+
+						String q = "update " + u_name + " set AUTHOR =" + "'" + n_name + "'" + " where AUTHOR =" + "'"
+								+ o_name + "'" + ";";
+						PreparedStatement pstmt = conn.prepareStatement(q);
+						pstmt.execute();
+						System.out.println(o_name + "'s name changed to " + n_name);
+
+					} catch (Exception e) {
+						System.out.println(e);
+					}
+				} else if (choice == 3) {
+					try {
+
+						sc.nextLine();
+						System.out.println("Enter the Author's name");
+						String name = sc.nextLine();
+
+						System.out.println("Enter the Author's gender");
+						String n_gen = sc.nextLine();
+
+						String q = "update " + u_name + " set GENDER =" + "'" + n_gen + "'" + " where AUTHOR = " + "'"
+								+ name + "'" + ";";
+						PreparedStatement pstmt = conn.prepareStatement(q);
+
+						pstmt.execute();
+						System.out.println(name + "'s gender changed to " + n_gen);
+					} catch (Exception e) {
+						System.out.println(e);
+					}
+				}
+
+				else if (choice == 4) {
+					try {
+
+						sc.nextLine();
+						System.out.println("Enter the book name");
+						String name = sc.nextLine();
+
+						System.out.println("Enter the new book category");
+						String n_cat = sc.nextLine();
+
+						String q = "update " + u_name + " set Book_CATEGORY=" + "'" + n_cat + "'"
+								+ " where Book_TITLE =" + "'" + name + "'" + ";";
+						PreparedStatement pstmt = conn.prepareStatement(q);
+						pstmt.execute();
+						System.out.println("Updated the category of " + name + " to " + n_cat);
+
+					} catch (Exception e) {
+						System.out.println(e);
+					}
+				}
+
+				if (choice == 5) {
+					try {
+
+						sc.nextLine();
+						System.out.println("Enter the book name");
+						String name = sc.nextLine();
+						
+						System.out.println("Enter the new book price");
+						float n_price = sc.nextFloat();						
+
+						String q = "update " + u_name + " set PRICE=" + n_price + " where Book_TITLE =" + "'" +name+ "'" + ";";
+						PreparedStatement pstmt = conn.prepareStatement(q);
+						pstmt.execute();
+
+						System.out.println("Price of "+name+" updated to " + "Rs. " + n_price);
+					} catch (Exception e) {
+						System.out.println(e);
+					}
+				}
+
+			} catch (Exception e) {
+				System.out.println(e);
+			}
+		} else
+			System.out.println("Wrong username or password !");
+	}
+
+	public static boolean checkpass(String u_name, String pass) {
+
+		String name = u_name;
+		String userpassword = pass;
+		Boolean check = false;
+		for (int i = 0; i < 6; i++) {
+			if ((user[i].toUpperCase()).equals(name.toUpperCase())) {
+
+				if (password[i].equals(userpassword)) {
+					check = true;
+					System.out.println("Logged in !");
+				}
+
+			}
+		}
+
+		return (check);
+
+	}
+
+	public static void retrieve() {
+		Scanner sc = new Scanner(System.in);
+		System.out.println("Enter username: ");
+		String u_name = sc.nextLine();
+
+		System.out.println("Enter password: ");
+		String pass = sc.nextLine();
+
+		if (checkpass(u_name, pass)) {
+			System.out.println("Enter book title please");
+			String b_name = sc.nextLine();
+
+			try {
+				BookMain book = new BookMain();
+				book.newConnection();
+
+				String q = "select * from " + u_name + ";";
+				Statement stmt = conn.createStatement();
+
+				ResultSet rs = stmt.executeQuery(q);
+				while (rs.next()) {
+					String disp1 = rs.getString("Book_TITLE");
+					int disp2 = rs.getInt("Book_ID");
+					String disp3 = rs.getString("AUTHOR");
+					String disp4 = rs.getString("GENDER");
+					String disp5 = rs.getString("Book_CATEGORY");
+					float disp6 = rs.getFloat("PRICE");
+
+					if (disp1.equals(b_name)) {
+						System.out.println("ID: " + disp2 + "\nTitle: " + disp1 + "\nAuthor: " + disp3 + "\nGender: "
+								+ disp4 + "\nCategory: " + disp5 + "\nPrice: " + disp6);
+						System.out.println("\n");
+					}
+				}
+
+			} catch (Exception e) {
+				System.out.println(e);
+			}
+		} else
+			System.out.println("Wrong username or password !");
+	}
+
+	public static void checkout() {
+		Scanner sc = new Scanner(System.in);
+		System.out.println("Enter username: ");
+		String u_name = sc.nextLine();
+		System.out.println("Enter password: ");
+		String pass = sc.nextLine();
+		try {
+			Boolean check = checkpass(u_name, pass);
+			if (check == true) {
+
+				BookMain book = new BookMain();
+				book.newConnection();
+				String q = "select * from " + u_name + ";";
+				Statement stmt = conn.createStatement();
+				double sum = 0.0;
+				ResultSet rs1 = stmt.executeQuery(q);
+				System.out.println("\nTHIS IS YOUR CART:\n");
+				while (rs1.next()) {
+					String disp1 = rs1.getString("Book_TITLE");
+					int disp2 = rs1.getInt("Book_ID");
+					String disp3 = rs1.getString("AUTHOR");
+					String disp4 = rs1.getString("GENDER");
+					String disp5 = rs1.getString("Book_CATEGORY");
+					float disp6 = rs1.getFloat("PRICE");
+					System.out.println("ID: " + disp2 + "\nTitle: " + disp1 + "\nAuthor: " + disp3 + "\nGender: "
+							+ disp4 + "\nCategory: " + disp5 + "\nPrice: " + disp6);
+					System.out.println("\n");
+
+				}
+				String p = "SELECT SUM(PRICE) FROM " + u_name + ";";
+				ResultSet rs2 = stmt.executeQuery(p);
+				while (rs2.next()) {
+					float c = rs2.getFloat(1);
+					sum = sum + c;
+
+				}
+				DecimalFormat df = new DecimalFormat("###.##");
+				System.out.println("Total bill = Rs. " + df.format(sum));
+				System.out.println("\n");
+
+			} else
+				System.out.println("Wrong username or password !");
+		} catch (Exception e) {
+			System.out.println(e);
+		}
+
+	}
+
+	public static void removeUser() {
+
+		Scanner sc = new Scanner(System.in);
+		System.out.println("Enter username: ");
+		String u_name = sc.nextLine();
+		System.out.println("Enter password: ");
+		String pass = sc.nextLine();
+
+		if (checkpass(u_name, pass)) {
+			System.out.println("Deletion menu:\n1.Remove selected book\n2.Remove all books\n3.Remove user");
+			int d_choice = sc.nextInt();
+
+			sc.nextLine();
+			switch (d_choice) {
+
+			case 1:
+				System.out.println("Enter book name which you want to remove");
+				String d_book = sc.nextLine();
+
+				System.out.println("Deleting: " + d_book);
+
+				try {
+					BookMain book = new BookMain();
+					book.newConnection();
+
+					String p = "delete from " + u_name + " where Book_TITLE = " + "'" + d_book + "'" + ";";
+					PreparedStatement pstmt = conn.prepareStatement(p);
+
+					pstmt.execute();
+
+					System.out.println(d_book + " removed from your cart!");
+
+				} catch (Exception e) {
+					System.out.println(e);
+				}
+				break;
+
+			case 2:
+				System.out.println("Are you sure you want to empty this cart ? (Y/N)");
+				char d_all = sc.next().charAt(0);
+				if (d_all == 'y' || d_all == 'Y') {
+					try {
+						BookMain book = new BookMain();
+						book.newConnection();
+						String q = "TRUNCATE TABLE " + u_name + ";";
+						PreparedStatement pstmt = conn.prepareStatement(q);
+						pstmt.execute();
+
+						System.out.println("Cart empty !");
+					} catch (Exception e) {
+						System.out.println(e);
+					}
+				}
+				break;
+
+			case 3:
+				System.out.println("Are you sure you want to delete this cart ? (Y/N)");
+				char del = sc.next().charAt(0);
+				if (del == 'y' || del == 'Y') {
+
+					for (int i = 0; i < 6; i++) {
+						if (user[i] == u_name) {
+							for (int j = i + 1; j < 6; j++) {
+								user[i] = user[j];
+							}
+							user[5] = null;
+						}
+					}
+
+					for (int i = 0; i < 6; i++) {
+						if (password[i] == pass) {
+							for (int j = i + 1; j < 6; j++) {
+								password[i] = password[j];
+							}
+							password[5] = null;
+						}
+					}
+
+					try {
+						BookMain book = new BookMain();
+						book.newConnection();
+						String q = "drop table " + u_name + ";";
+						PreparedStatement pstmt = conn.prepareStatement(q);
+						pstmt.execute();
+						System.out.println("User removed from database ! ");
+					} catch (Exception e) {
+						System.out.println(e);
+					}
+				}
+				break;
+			default:
+				System.out.println("Wrong input !");
+			}
+
+		} else
+			System.out.println("Wrong username or password !");
+
+	}
+
+	public static void closeConnection() {
+		if (conn != null) {
+			try {
+				conn.close();
+				System.out.println("\n");
+				System.out.println("JDBC connection closed !");
+			} catch (Exception e) {
+				System.out.println(e);
+			}
+		}
+	}
+}
